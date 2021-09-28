@@ -18,13 +18,12 @@ class Search {
         val instance: Search?
             get() {
                 if (search != null)
-                   return search
+                    return search
                 else {
-                   search = Search()
+                    search = Search()
                     return search
                 }
             }
-        //search url ,analytic icin campany id, google ad id alinacak
     }
 
 
@@ -35,7 +34,7 @@ class Search {
     val errorMessage = "{errorMessage = 'You are not init!!' }"
 
     fun init(url: String, analyticId: String, companyID: String) {
-        search?.url = url
+        search?.url = url+"?"
         search?.analyticId = analyticId
         search?.companyID = companyID
     }
@@ -43,11 +42,10 @@ class Search {
 
     fun searchIo(
         context: Context,
-        params: HashMap<String, String>? = null,//lower case yap
+        params: HashMap<String, String>? = null,
         paramsWithUrl: String? = null,
         listener: ((String) -> (Unit))
     ) {
-
         if (url.isNullOrBlank()) listener.invoke(errorMessage)
         else {
             var apiUrl = paramsWithUrl
@@ -59,6 +57,12 @@ class Search {
             val stringRequest = StringRequest(
                 Request.Method.GET, apiUrl,
                 { response ->
+                    val params2 = HashMap<String, String>()
+                    params2.put("waw_keyword", q ?: "")
+                    params2.put("uid", companyID ?: "")
+                    params2.put("ga", analyticId ?: "")
+                    params2.put("device_os", "android")
+                    sendAnalytic(context,params2)
                     listener.invoke(response)
                 },
                 {
@@ -74,19 +78,32 @@ class Search {
     fun sendClick(
         context: Context,
         productId: String?,
-        listener: ((String) -> (Unit))
+        listener: ((String) -> (Unit))?
     ) {
+        val params2 = HashMap<String, String>()
+        params2.put("waw_keyword", q ?: "")
+        params2.put("uid", companyID ?: "")
+        params2.put("product_id", productId ?: "")
+        params2.put("device_os", "Android")
+        sendAnalytic(context,params2,listener)
+    }
+
+    fun sendAnalytic(
+        context: Context,
+        params: HashMap<String, String>,
+        listener: ((String) -> (Unit))? = null
+    ) {
+
         val queue = Volley.newRequestQueue(context)
         val url = "https://wa.wawlabs.com"
 
         val stringRequest = object : StringRequest(
             Method.POST, url,
             Response.Listener<String> { response ->
-                listener.invoke(response)
+                listener?.invoke(response)
             },
             Response.ErrorListener {
-                listener.invoke(it.message ?: "")
-
+                listener?.invoke(it.message ?: "")
             }) {
             override fun getBodyContentType(): String {
                 return "application/json"
@@ -94,11 +111,7 @@ class Search {
 
             @Throws(AuthFailureError::class)
             override fun getBody(): ByteArray {
-                val params2 = HashMap<String, String>()
-                params2.put("waw_keyword", q ?: "")
-                params2.put("uid", companyID ?: "")
-                params2.put("product_id", productId ?: "")
-                return JSONObject(params2 as Map<*, *>).toString().toByteArray()
+                return JSONObject(params as Map<*, *>).toString().toByteArray()
             }
         }
         queue.add(stringRequest)

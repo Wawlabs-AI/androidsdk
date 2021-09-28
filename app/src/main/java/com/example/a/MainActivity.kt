@@ -13,11 +13,25 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val text = findViewById<TextView>(R.id.text)
-        val map = hashMapOf("q" to "tv", "d" to "True", "f" to "True")
+        val text2 = findViewById<TextView>(R.id.text2)
+        val map = hashMapOf("q" to "iphone", "d" to "True", "f" to "True")
         Search.instance?.searchIo(this,params =  map) {
-            Log.e("Muhammet response", it)
+            Log.e("Test searchIo response", it)
             text.text = it
 
+        }
+      /*
+
+       Search.instance?.searchIo(this,paramsWithUrl =  "https://test.wawlabs.com/awx_vse?q=iphone&d=True&f=True") {
+            Log.e("Test response", it)
+            text.text = it
+
+        }
+
+        */
+        Search.instance?.sendClick(this,"123456"){
+            Log.e("Test sendClick response", it)
+            text2.text = it
         }
     }
 }

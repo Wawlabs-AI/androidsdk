@@ -6,6 +6,6 @@ class MyApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        Search.instance?.init("https://teknosa.wawlabs.com/avx_wse?","Muhammet","Sanver")
+        Search.instance?.init("https://test.wawlabs.com/avx_wse","13541553","KNZWB-3765418567")
     }
 }
