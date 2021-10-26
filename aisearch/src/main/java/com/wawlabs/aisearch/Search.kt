@@ -1,7 +1,6 @@
 package com.wawlabs.aisearch
 
 import android.content.Context
-import android.util.Log
 import com.android.volley.AuthFailureError
 import com.android.volley.Request
 import com.android.volley.Response
@@ -31,10 +30,12 @@ class Search {
     var q: String? = null
     var companyID: String? = null
     var url: String? = null
+    private var autoCompleteUrl: String? = null
     val errorMessage = "{errorMessage = 'You are not init!!' }"
 
-    fun init(url: String, analyticId: String, companyID: String) {
-        search?.url = url+"?"
+    fun init(url: String, autoCompleteUrl: String, analyticId: String, companyID: String) {
+        search?.url = url + "?"
+        search?.autoCompleteUrl = autoCompleteUrl + "?" //https://test.wawlabs.com/avx_eac
         search?.analyticId = analyticId
         search?.companyID = companyID
     }
@@ -62,7 +63,7 @@ class Search {
                     params2.put("uid", companyID ?: "")
                     params2.put("ga", analyticId ?: "")
                     params2.put("device_os", "android")
-                    sendAnalytic(context,params2)
+                    sendAnalytic(context, params2)
                     listener.invoke(response)
                 },
                 {
@@ -72,6 +73,26 @@ class Search {
             )
             queue.add(stringRequest)
         }
+    }
+
+    fun autoComplete(
+        context: Context,
+        searchKey: String?,
+        listener: ((String) -> (Unit))
+    ) {
+        var apiUrl = autoCompleteUrl + "q=" + searchKey
+        val queue = Volley.newRequestQueue(context)
+        val stringRequest = StringRequest(
+            Request.Method.GET, apiUrl,
+            { response ->
+                listener.invoke(response)
+            },
+            {
+                listener.invoke(it.message ?: "")
+
+            }
+        )
+        queue.add(stringRequest)
     }
 
 
@@ -84,8 +105,8 @@ class Search {
         params2.put("waw_keyword", q ?: "")
         params2.put("uid", companyID ?: "")
         params2.put("product_id", productId ?: "")
-        params2.put("device_os", "Android")
-        sendAnalytic(context,params2,listener)
+        params2.put("device_os", "android")
+        sendAnalytic(context, params2, listener)
     }
 
     fun sendAnalytic(
